@@ -59,8 +59,8 @@
 ## Phase 3 - Design & Field Updates
 
 ### Theme & Design Changes
-- [ ] Change overall theme/color palette (away from transcendent lavender/blush)
-- [ ] Update typography and visual styling
+- [x] Change overall theme/color palette (away from transcendent lavender/blush)
+- [x] Update typography and visual styling
 
 ### Section 3: Budget and Duration
 - [x] Change "Total Campaign Duration (Number of days)" label to "Total number of days ad is going to run"
@@ -97,22 +97,22 @@
 - [x] Remove "Bi-weekly" option from "Preferred Reporting Frequency" dropdown
 
 ### Database & Backend
-- [ ] Update schema to remove deleted fields
-- [ ] Update schema to add file upload field for customer data
-- [ ] Update tRPC validation schema
-- [ ] Update email template to reflect new field names and structure
+- [x] Update schema to remove deleted fields
+- [x] Update schema to add file upload field for customer data
+- [x] Update tRPC validation schema
+- [x] Update email template to reflect new field names and structure
 
 ### Frontend
-- [ ] Update OnboardingForm component with new field labels
-- [ ] Add file upload input for Section 7
-- [ ] Update validation to make Facebook and Instagram links required
-- [ ] Remove deleted fields from form
-- [ ] Update form submission logic to handle file uploads
+- [x] Update OnboardingForm component with new field labels
+- [x] Add file upload input for Section 7
+- [x] Update validation to make Facebook and Instagram links required
+- [x] Remove deleted fields from form
+- [x] Update form submission logic to handle file uploads
 
 ### Testing
-- [ ] Update tests to reflect new required fields and removed fields
-- [ ] Test file upload functionality
-- [ ] Verify email template shows correct field labels
+- [x] Update tests to reflect new required fields and removed fields
+- [x] Test file upload functionality
+- [x] Verify email template shows correct field labels
 
 
 ## Phase 4 - Campaign Guidelines Section
@@ -127,3 +127,11 @@
 - [x] Add checkbox: "I have read and understood all campaign guidelines"
 - [x] Update form validation to require guidelines acknowledgement
 - [x] Test scroll detection on mobile and desktop devices
+
+
+## Phase 5 - Section 10 Note Update
+
+### Section 10 Access and Permissions Note
+- [x] Update the note in Section 10 to include alternative option for clients
+- [x] Add text: "If you don't want to add your credentials then you can also connect with **Shunya&co** team"
+- [x] Keep existing portfolio sharing note with email and Facebook URL

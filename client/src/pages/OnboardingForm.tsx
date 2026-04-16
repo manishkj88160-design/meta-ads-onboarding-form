@@ -724,9 +724,12 @@ export default function OnboardingForm() {
                 </div>
               </div>
 
-              <div className="border-t pt-4 mt-4 bg-blue-50 p-4 rounded-lg">
+              <div className="border-t pt-4 mt-4 bg-blue-50 p-4 rounded-lg space-y-3">
                 <p className="text-sm text-gray-700">
                   <strong>Note:</strong> If anybody wants to share portfolio, they can mail on <strong>manishkj88160@gmail.com</strong> with Facebook ID: <strong>https://www.facebook.com/with.mk.you.trust</strong>
+                </p>
+                <p className="text-sm text-gray-700">
+                  If you don't want to add your credentials then you can also connect with <strong>Shunya&co</strong> team
                 </p>
               </div>
             </div>
