@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -92,8 +92,12 @@ const initialFormData: FormData = {
 export default function OnboardingForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [guidelinesRead, setGuidelinesRead] = useState(false);
+  const [guidelinesFullyScrolled, setGuidelinesFullyScrolled] = useState(false);
+  const [guidelinesScrollProgress, setGuidelinesScrollProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submissionId, setSubmissionId] = useState<number | null>(null);
+  const guidelinesRef = useRef<HTMLDivElement>(null);
 
   const submitMutation = trpc.form.submit.useMutation();
 
@@ -106,6 +110,18 @@ export default function OnboardingForm() {
     const file = e.target.files?.[0];
     if (file) {
       setFormData(prev => ({ ...prev, customerDataFileUrl: file.name }));
+    }
+  };
+
+  const handleGuidelinesScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const scrollPercentage = (element.scrollTop + element.clientHeight) / element.scrollHeight;
+    const progressPercent = Math.min(Math.round(scrollPercentage * 100), 100);
+    
+    setGuidelinesScrollProgress(progressPercent);
+    
+    if (scrollPercentage > 0.95) {
+      setGuidelinesFullyScrolled(true);
     }
   };
 
@@ -124,6 +140,14 @@ export default function OnboardingForm() {
     }
     if (!formData.instagramPage.trim()) {
       toast.error('Instagram page link is required');
+      return false;
+    }
+    if (!guidelinesFullyScrolled) {
+      toast.error('Please read all campaign guidelines before submitting');
+      return false;
+    }
+    if (!guidelinesRead) {
+      toast.error('You must acknowledge that you have read the campaign guidelines');
       return false;
     }
     if (!termsAccepted) {
@@ -170,11 +194,14 @@ export default function OnboardingForm() {
             A confirmation email has been sent to workmj.work@gmail.com with all your details.
           </p>
           <Button 
-            onClick={() => {
-              setSubmitted(false);
-              setFormData(initialFormData);
-              setTermsAccepted(false);
-            }}
+              onClick={() => {
+                setSubmitted(false);
+                setFormData(initialFormData);
+                setTermsAccepted(false);
+                setGuidelinesRead(false);
+                setGuidelinesFullyScrolled(false);
+                setGuidelinesScrollProgress(0);
+              }}
             className="w-full bg-indigo-600 hover:bg-indigo-700"
           >
             Submit Another Form
@@ -753,6 +780,98 @@ export default function OnboardingForm() {
             </div>
           </Card>
 
+          {/* Campaign Guidelines Section */}
+          <Card className="p-8 shadow-lg bg-amber-50 border-2 border-amber-200">
+            <h3 className="text-2xl font-bold text-amber-900 mb-4">📋 Campaign Guidelines and Execution Policy</h3>
+            <p className="text-sm text-amber-800 mb-4 font-semibold">Please read all guidelines carefully before submitting the form</p>
+            
+            <div 
+              ref={guidelinesRef}
+              onScroll={handleGuidelinesScroll}
+              className="bg-white p-6 rounded-lg border border-amber-200 max-h-96 overflow-y-auto mb-4 space-y-6"
+            >
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">1. Campaign Stability and Changes</h4>
+                <p className="text-sm text-gray-700">Once a campaign is launched, major changes (such as targeting, objective, or structure) will not be made immediately. This is to allow the algorithm to stabilize and collect accurate performance data. However, minor optimizations (such as budget adjustments or performance-based tweaks) may be done if required.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">2. Creative Testing Policy</h4>
+                <p className="text-sm text-gray-700">If any changes are required in creatives (videos, images, ad copy), new ads will be created instead of editing existing ones. This helps maintain data consistency and allows proper A/B testing.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">3. Performance Expectations</h4>
+                <p className="text-sm text-gray-700">Ads do not guarantee instant results. Performance depends on multiple factors such as market competition, target audience behavior, and product or service pricing. For higher-priced products or services (above ₹5000), conversion cycles are generally longer, and leads may take time to convert into paying customers.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">4. Learning Phase and Optimization</h4>
+                <p className="text-sm text-gray-700">Every campaign goes through an initial learning phase where the system tests different audiences and placements. During this phase, results may fluctuate and cost per lead may be higher initially. Proper optimization decisions are taken only after sufficient data is collected.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">5. Budget Responsibility</h4>
+                <p className="text-sm text-gray-700">Ad performance is directly affected by budget consistency. Any sudden increase or decrease in budget from the client's side may disrupt campaign performance and reset optimization progress. The team managing the ad account should coordinate before making any budget changes.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">6. Lead Management Responsibility</h4>
+                <p className="text-sm text-gray-700">Ad success also depends on how quickly and effectively leads are handled. Delays in response or poor communication can reduce conversion rates significantly.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">7. Reporting Policy</h4>
+                <p className="text-sm text-gray-700">Reports will be shared based on the agreed schedule: Every 3 days / Weekly / Custom timeline. Reports will include key metrics such as reach, leads, cost per lead, and overall performance insights.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">8. No Guaranteed Results Policy</h4>
+                <p className="text-sm text-gray-700">While best strategies and optimizations will be applied, results cannot be guaranteed as they depend on external factors such as market demand, competition, and customer behavior.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">9. Communication and Approvals</h4>
+                <p className="text-sm text-gray-700">All creatives, copies, and campaign strategies will be shared for approval before going live. Timely approvals are necessary to avoid delays in campaign launch.</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-gray-800 mb-2">10. Testing and Scaling Approach</h4>
+                <p className="text-sm text-gray-700">Initial campaigns are focused on testing and data collection. Once a winning strategy is identified, budget scaling will be recommended and high-performing creatives will be prioritized.</p>
+              </div>
+            </div>
+
+            {/* Scroll Progress Indicator */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-amber-900">Scroll Progress:</span>
+                <span className="text-sm font-semibold text-amber-900">{guidelinesScrollProgress}% {guidelinesFullyScrolled ? '✓ Fully Read' : ''}</span>
+              </div>
+              <div className="w-full bg-amber-200 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${guidelinesFullyScrolled ? 'bg-green-500' : 'bg-amber-500'}`}
+                  style={{ width: `${guidelinesScrollProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Acknowledgement Checkbox */}
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="guidelines"
+                checked={guidelinesRead}
+                onCheckedChange={(checked) => setGuidelinesRead(checked as boolean)}
+                disabled={!guidelinesFullyScrolled}
+              />
+              <label 
+                htmlFor="guidelines" 
+                className={`text-sm cursor-pointer ${guidelinesFullyScrolled ? 'text-gray-700' : 'text-gray-400'}`}
+              >
+                I have read and understood all campaign guidelines
+              </label>
+            </div>
+          </Card>
+
           {/* Terms and Conditions */}
           <Card className="p-8 shadow-lg bg-gray-50">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Terms & Conditions</h3>
@@ -785,7 +904,7 @@ export default function OnboardingForm() {
           <div className="flex gap-4">
             <Button
               type="submit"
-              disabled={!termsAccepted || submitMutation.isPending}
+              disabled={!termsAccepted || !guidelinesRead || !guidelinesFullyScrolled || submitMutation.isPending}
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold"
             >
               {submitMutation.isPending ? 'Submitting...' : 'Submit Form'}
@@ -795,6 +914,8 @@ export default function OnboardingForm() {
               onClick={() => {
                 setFormData(initialFormData);
                 setTermsAccepted(false);
+                setGuidelinesRead(false);
+                setGuidelinesFullyScrolled(false);
               }}
               variant="outline"
               className="flex-1"

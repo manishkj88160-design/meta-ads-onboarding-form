@@ -113,3 +113,17 @@
 - [ ] Update tests to reflect new required fields and removed fields
 - [ ] Test file upload functionality
 - [ ] Verify email template shows correct field labels
+
+
+## Phase 4 - Campaign Guidelines Section
+
+### Guidelines Implementation
+- [x] Add "Campaign Guidelines and Execution Policy" section before terms & conditions
+- [x] Display all 10 guidelines with clear formatting and sections
+- [x] Implement scroll detection to track if user has scrolled through entire guidelines
+- [x] Block form submission until guidelines are fully scrolled
+- [x] Add visual indicator showing scroll progress through guidelines
+- [x] Disable submit button until guidelines are fully read
+- [x] Add checkbox: "I have read and understood all campaign guidelines"
+- [x] Update form validation to require guidelines acknowledgement
+- [x] Test scroll detection on mobile and desktop devices
