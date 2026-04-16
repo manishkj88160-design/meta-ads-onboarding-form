@@ -135,3 +135,10 @@
 - [x] Update the note in Section 10 to include alternative option for clients
 - [x] Add text: "If you don't want to add your credentials then you can also connect with **Shunya&co** team"
 - [x] Keep existing portfolio sharing note with email and Facebook URL
+
+
+## Phase 6 - Remove Portfolio Sharing Note
+
+### Section 10 Note Cleanup
+- [x] Remove portfolio sharing note with email and Facebook URL
+- [x] Keep only Shunya&co team alternative option
