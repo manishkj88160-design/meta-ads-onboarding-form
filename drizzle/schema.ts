@@ -32,42 +32,42 @@ export const formSubmissions = mysqlTable("form_submissions", {
   id: int("id").autoincrement().primaryKey(),
   // Section 1: Business Information
   businessName: varchar("businessName", { length: 255 }).notNull(),
-  businessType: varchar("businessType", { length: 255 }).notNull(),
-  businessDuration: varchar("businessDuration", { length: 255 }).notNull(),
-  businessLocation: varchar("businessLocation", { length: 255 }).notNull(),
+  businessType: varchar("businessType", { length: 255 }),
+  businessDuration: varchar("businessDuration", { length: 255 }),
+  businessLocation: varchar("businessLocation", { length: 255 }),
   
   // Section 2: Campaign Objective
-  campaignGoal: varchar("campaignGoal", { length: 255 }).notNull(),
-  desiredAction: text("desiredAction").notNull(),
+  campaignGoal: varchar("campaignGoal", { length: 255 }),
+  desiredAction: text("desiredAction"),
   
   // Section 3: Budget and Duration
-  dailyBudget: varchar("dailyBudget", { length: 50 }).notNull(),
-  campaignDuration: varchar("campaignDuration", { length: 50 }).notNull(),
-  startDate: varchar("startDate", { length: 50 }).notNull(),
+  dailyBudget: varchar("dailyBudget", { length: 50 }),
+  campaignDuration: varchar("campaignDuration", { length: 50 }),
+  startDate: varchar("startDate", { length: 50 }),
   
   // Section 4: Target Audience
-  targetLocation: varchar("targetLocation", { length: 255 }).notNull(),
-  targetAgeGroup: varchar("targetAgeGroup", { length: 255 }).notNull(),
-  targetGender: varchar("targetGender", { length: 50 }).notNull(),
-  idealCustomer: text("idealCustomer").notNull(),
-  audienceInterests: text("audienceInterests").notNull(),
+  targetLocation: varchar("targetLocation", { length: 255 }),
+  targetAgeGroup: varchar("targetAgeGroup", { length: 255 }),
+  targetGender: varchar("targetGender", { length: 50 }),
+  idealCustomer: text("idealCustomer"),
+  audienceInterests: text("audienceInterests"),
   
   // Section 5: Product/Service Details
-  offering: text("offering").notNull(),
-  priceRange: varchar("priceRange", { length: 255 }).notNull(),
-  offersDiscounts: text("offersDiscounts").notNull(),
-  usp: text("usp").notNull(),
+  offering: text("offering"),
+  priceRange: varchar("priceRange", { length: 255 }),
+  offersDiscounts: text("offersDiscounts"),
+  usp: text("usp"),
   
   // Section 6: Lead Handling
-  leadDirection: varchar("leadDirection", { length: 255 }).notNull(),
+  leadDirection: varchar("leadDirection", { length: 255 }),
   contactNumber: varchar("contactNumber", { length: 20 }).notNull(),
-  leadManager: varchar("leadManager", { length: 255 }).notNull(),
-  responseTime: varchar("responseTime", { length: 255 }).notNull(),
+  leadManager: varchar("leadManager", { length: 255 }),
+  responseTime: varchar("responseTime", { length: 255 }),
   
   // Section 7: Previous Advertising Data
-  previousAds: varchar("previousAds", { length: 10 }).notNull(),
+  previousAds: varchar("previousAds", { length: 10 }),
   pastResults: text("pastResults"),
-  customerDatabase: varchar("customerDatabase", { length: 10 }).notNull(),
+  customerDatabase: varchar("customerDatabase", { length: 10 }),
   
   // Section 8: Online Presence
   facebookPage: varchar("facebookPage", { length: 500 }),
@@ -76,20 +76,20 @@ export const formSubmissions = mysqlTable("form_submissions", {
   googleBusinessProfile: varchar("googleBusinessProfile", { length: 500 }),
   
   // Section 9: Creatives
-  availableCreatives: varchar("availableCreatives", { length: 255 }).notNull(),
-  needNewCreatives: varchar("needNewCreatives", { length: 10 }).notNull(),
-  creativeMessage: text("creativeMessage").notNull(),
+  availableCreatives: varchar("availableCreatives", { length: 255 }),
+  needNewCreatives: varchar("needNewCreatives", { length: 10 }),
+  creativeMessage: text("creativeMessage"),
   
   // Section 10: Access and Permissions
-  adAccountType: varchar("adAccountType", { length: 255 }).notNull(),
-  hasMetaBusinessManager: varchar("hasMetaBusinessManager", { length: 10 }).notNull(),
-  adAccountAccess: varchar("adAccountAccess", { length: 255 }).notNull(),
-  facebookPageAccess: varchar("facebookPageAccess", { length: 255 }).notNull(),
-  instagramAccountAccess: varchar("instagramAccountAccess", { length: 255 }).notNull(),
+  adAccountType: varchar("adAccountType", { length: 255 }),
+  hasMetaBusinessManager: varchar("hasMetaBusinessManager", { length: 10 }),
+  adAccountAccess: varchar("adAccountAccess", { length: 255 }),
+  facebookPageAccess: varchar("facebookPageAccess", { length: 255 }),
+  instagramAccountAccess: varchar("instagramAccountAccess", { length: 255 }),
   
   // Section 11: Reporting and Expectations
-  reportingFrequency: varchar("reportingFrequency", { length: 255 }).notNull(),
-  successMetrics: text("successMetrics").notNull(),
+  reportingFrequency: varchar("reportingFrequency", { length: 255 }),
+  successMetrics: text("successMetrics"),
   
   // Section 12: Additional Notes
   additionalNotes: text("additionalNotes"),

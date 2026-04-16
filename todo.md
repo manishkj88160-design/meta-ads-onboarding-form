@@ -5,6 +5,8 @@
 - [x] Create database helper functions for storing submissions
 - [x] Create tRPC procedure to handle form submission
 - [x] Integrate owner notification on form submission with structured format
+- [x] Update schema to make most fields optional (only businessName and contactNumber required)
+- [x] Apply database migration for optional fields
 
 ## Frontend - Form Structure
 - [x] Build Section 1: Business Information (business name, type, duration, location)
@@ -21,11 +23,12 @@
 - [x] Build Section 12: Additional Notes (any extra instructions)
 
 ## Frontend - Form Features
+- [x] Convert form from multi-section to single-page layout
+- [x] Display all 12 sections on one page with smooth scrolling
+- [x] Remove progress indicator and section navigation
 - [x] Implement read-only terms/confirmation block before submission
 - [x] Implement required acknowledgement checkbox (blocks submission if unchecked)
-- [x] Implement form validation for all required fields (including Section 8/9)
-- [x] Implement progress indicator showing current section
-- [x] Implement navigation between sections (next/previous buttons)
+- [x] Implement form validation (only businessName and contactNumber required)
 - [x] Implement success confirmation screen after submission
 
 ## Design & Styling
@@ -36,13 +39,18 @@
 - [x] Ensure responsive design for mobile, tablet, desktop
 - [x] Apply gentle color transitions and balanced negative space
 
+## Email Integration
+- [x] Set up email delivery to workmj.work@gmail.com
+- [x] Create HTML email template with all form data
+- [x] Integrate email sending with form submission
+- [x] Update success message to confirm email sent
+
 ## Testing & Validation
 - [x] Write vitest tests for form submission logic
 - [x] Write vitest tests for database storage
-- [x] Write vitest tests for notification formatting
-- [x] Test form validation across all sections
-- [x] Test responsive design on multiple screen sizes
+- [x] Test form validation with optional fields
+- [x] All tests passing
 
 ## Deployment
-- [x] Create checkpoint for initial delivery
+- [x] Create checkpoint for updated single-page form
 - [x] Provide live URL to user
