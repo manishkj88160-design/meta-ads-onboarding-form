@@ -278,7 +278,7 @@ export const appRouter = router({
       </div>
       <div class="field" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
         <div style="font-style: italic; color: #666;">
-          <strong>Note:</strong> If anybody wants to share portfolio, they can mail on <strong>manishkj88160@gmail.com</strong> with Facebook ID: <strong>https://www.facebook.com/with.mk.you.trust</strong>
+          <strong>Note:</strong> If you don't want to add your credentials then you can also connect with <strong>Shunya&co</strong> team
         </div>
       </div>
     </div>
