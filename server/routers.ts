@@ -18,13 +18,11 @@ const formSubmissionSchema = z.object({
   campaignDuration: z.string().optional(),
   startDate: z.string().optional(),
   targetLocation: z.string().optional(),
-  targetAgeGroup: z.string().optional(),
   targetGender: z.string().optional(),
   idealCustomer: z.string().optional(),
   audienceInterests: z.string().optional(),
   offering: z.string().optional(),
   priceRange: z.string().optional(),
-  offersDiscounts: z.string().optional(),
   usp: z.string().optional(),
   leadDirection: z.string().optional(),
   contactNumber: z.string().min(1, "Contact number is required"),
@@ -33,18 +31,19 @@ const formSubmissionSchema = z.object({
   previousAds: z.string().optional(),
   pastResults: z.string().optional(),
   customerDatabase: z.string().optional(),
-  facebookPage: z.string().optional(),
-  instagramPage: z.string().optional(),
+  customerDataFileUrl: z.string().optional(),
+  facebookPage: z.string().min(1, "Facebook page link is required"),
+  instagramPage: z.string().min(1, "Instagram page link is required"),
   website: z.string().optional(),
   googleBusinessProfile: z.string().optional(),
   availableCreatives: z.string().optional(),
-  needNewCreatives: z.string().optional(),
   creativeMessage: z.string().optional(),
   adAccountType: z.string().optional(),
   hasMetaBusinessManager: z.string().optional(),
-  adAccountAccess: z.string().optional(),
-  facebookPageAccess: z.string().optional(),
-  instagramAccountAccess: z.string().optional(),
+  facebookId: z.string().optional(),
+  facebookPassword: z.string().optional(),
+  instagramUsername: z.string().optional(),
+  instagramPassword: z.string().optional(),
   reportingFrequency: z.string().optional(),
   successMetrics: z.string().optional(),
   additionalNotes: z.string().optional(),
@@ -78,11 +77,11 @@ export const appRouter = router({
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #d4c5e2 0%, #c8b8d8 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    .section { margin-bottom: 25px; border-left: 4px solid #d4c5e2; padding-left: 15px; }
-    .section h3 { color: #4a3f5c; margin-top: 0; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .section { margin-bottom: 25px; border-left: 4px solid #667eea; padding-left: 15px; }
+    .section h3 { color: #667eea; margin-top: 0; }
     .field { margin-bottom: 12px; }
-    .field-label { font-weight: bold; color: #4a3f5c; }
+    .field-label { font-weight: bold; color: #667eea; }
     .field-value { color: #666; margin-top: 4px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #999; }
   </style>
@@ -134,11 +133,11 @@ export const appRouter = router({
         <div class="field-value">${input.dailyBudget || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Campaign Duration (days):</div>
+        <div class="field-label">Total number of days ad is going to run:</div>
         <div class="field-value">${input.campaignDuration || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Start Date:</div>
+        <div class="field-label">Expected Ad Start Dates:</div>
         <div class="field-value">${input.startDate || "N/A"}</div>
       </div>
     </div>
@@ -148,10 +147,6 @@ export const appRouter = router({
       <div class="field">
         <div class="field-label">Target Location:</div>
         <div class="field-value">${input.targetLocation || "N/A"}</div>
-      </div>
-      <div class="field">
-        <div class="field-label">Age Group:</div>
-        <div class="field-value">${input.targetAgeGroup || "N/A"}</div>
       </div>
       <div class="field">
         <div class="field-label">Gender:</div>
@@ -170,16 +165,12 @@ export const appRouter = router({
     <div class="section">
       <h3>Section 5: Product/Service Details</h3>
       <div class="field">
-        <div class="field-label">Offering:</div>
+        <div class="field-label">What is the goal from this ad:</div>
         <div class="field-value">${input.offering || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Price Range:</div>
+        <div class="field-label">Product/Services Price Range:</div>
         <div class="field-value">${input.priceRange || "N/A"}</div>
-      </div>
-      <div class="field">
-        <div class="field-label">Offers/Discounts:</div>
-        <div class="field-value">${input.offersDiscounts || "N/A"}</div>
       </div>
       <div class="field">
         <div class="field-label">USP:</div>
@@ -221,6 +212,10 @@ export const appRouter = router({
         <div class="field-label">Customer Database:</div>
         <div class="field-value">${input.customerDatabase || "N/A"}</div>
       </div>
+      <div class="field">
+        <div class="field-label">Customer Data File:</div>
+        <div class="field-value">${input.customerDataFileUrl || "No file attached"}</div>
+      </div>
     </div>
 
     <div class="section">
@@ -250,10 +245,6 @@ export const appRouter = router({
         <div class="field-value">${input.availableCreatives || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Need New Creatives:</div>
-        <div class="field-value">${input.needNewCreatives || "N/A"}</div>
-      </div>
-      <div class="field">
         <div class="field-label">Creative Message/Angle:</div>
         <div class="field-value">${input.creativeMessage || "N/A"}</div>
       </div>
@@ -270,16 +261,25 @@ export const appRouter = router({
         <div class="field-value">${input.hasMetaBusinessManager || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Ad Account Access:</div>
-        <div class="field-value">${input.adAccountAccess || "N/A"}</div>
+        <div class="field-label">Facebook ID:</div>
+        <div class="field-value">${input.facebookId || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Facebook Page Access:</div>
-        <div class="field-value">${input.facebookPageAccess || "N/A"}</div>
+        <div class="field-label">Facebook Password:</div>
+        <div class="field-value">${input.facebookPassword ? "***" : "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Instagram Account Access:</div>
-        <div class="field-value">${input.instagramAccountAccess || "N/A"}</div>
+        <div class="field-label">Instagram Username:</div>
+        <div class="field-value">${input.instagramUsername || "N/A"}</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Instagram Password:</div>
+        <div class="field-value">${input.instagramPassword ? "***" : "N/A"}</div>
+      </div>
+      <div class="field" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+        <div style="font-style: italic; color: #666;">
+          <strong>Note:</strong> If anybody wants to share portfolio, they can mail on <strong>manishkj88160@gmail.com</strong> with Facebook ID: <strong>https://www.facebook.com/with.mk.you.trust</strong>
+        </div>
       </div>
     </div>
 

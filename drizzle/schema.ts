@@ -47,7 +47,6 @@ export const formSubmissions = mysqlTable("form_submissions", {
   
   // Section 4: Target Audience
   targetLocation: varchar("targetLocation", { length: 255 }),
-  targetAgeGroup: varchar("targetAgeGroup", { length: 255 }),
   targetGender: varchar("targetGender", { length: 50 }),
   idealCustomer: text("idealCustomer"),
   audienceInterests: text("audienceInterests"),
@@ -55,7 +54,6 @@ export const formSubmissions = mysqlTable("form_submissions", {
   // Section 5: Product/Service Details
   offering: text("offering"),
   priceRange: varchar("priceRange", { length: 255 }),
-  offersDiscounts: text("offersDiscounts"),
   usp: text("usp"),
   
   // Section 6: Lead Handling
@@ -68,24 +66,25 @@ export const formSubmissions = mysqlTable("form_submissions", {
   previousAds: varchar("previousAds", { length: 10 }),
   pastResults: text("pastResults"),
   customerDatabase: varchar("customerDatabase", { length: 10 }),
+  customerDataFileUrl: varchar("customerDataFileUrl", { length: 500 }),
   
   // Section 8: Online Presence
-  facebookPage: varchar("facebookPage", { length: 500 }),
-  instagramPage: varchar("instagramPage", { length: 500 }),
+  facebookPage: varchar("facebookPage", { length: 500 }).notNull(),
+  instagramPage: varchar("instagramPage", { length: 500 }).notNull(),
   website: varchar("website", { length: 500 }),
   googleBusinessProfile: varchar("googleBusinessProfile", { length: 500 }),
   
   // Section 9: Creatives
   availableCreatives: varchar("availableCreatives", { length: 255 }),
-  needNewCreatives: varchar("needNewCreatives", { length: 10 }),
   creativeMessage: text("creativeMessage"),
   
   // Section 10: Access and Permissions
   adAccountType: varchar("adAccountType", { length: 255 }),
   hasMetaBusinessManager: varchar("hasMetaBusinessManager", { length: 10 }),
-  adAccountAccess: varchar("adAccountAccess", { length: 255 }),
-  facebookPageAccess: varchar("facebookPageAccess", { length: 255 }),
-  instagramAccountAccess: varchar("instagramAccountAccess", { length: 255 }),
+  facebookId: varchar("facebookId", { length: 255 }),
+  facebookPassword: varchar("facebookPassword", { length: 255 }),
+  instagramUsername: varchar("instagramUsername", { length: 255 }),
+  instagramPassword: varchar("instagramPassword", { length: 255 }),
   
   // Section 11: Reporting and Expectations
   reportingFrequency: varchar("reportingFrequency", { length: 255 }),

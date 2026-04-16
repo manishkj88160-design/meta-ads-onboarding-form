@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -16,13 +16,11 @@ vi.mock("./db", () => ({
     campaignDuration: "30",
     startDate: "2026-05-01",
     targetLocation: "5 KM radius",
-    targetAgeGroup: "25-34",
     targetGender: "All",
     idealCustomer: "Young professionals",
     audienceInterests: "Tech enthusiasts",
     offering: "Online products",
     priceRange: "500-2000",
-    offersDiscounts: "10% discount",
     usp: "Best quality",
     leadDirection: "WhatsApp",
     contactNumber: "+91 9876543210",
@@ -31,18 +29,19 @@ vi.mock("./db", () => ({
     previousAds: "Yes",
     pastResults: "Good results",
     customerDatabase: "Yes",
+    customerDataFileUrl: "",
     facebookPage: "https://facebook.com/test",
     instagramPage: "https://instagram.com/test",
     website: "https://test.com",
     googleBusinessProfile: "https://google.com/test",
     availableCreatives: "Both",
-    needNewCreatives: "No",
     creativeMessage: "Great offer",
     adAccountType: "Business Owner Account",
     hasMetaBusinessManager: "Yes",
-    adAccountAccess: "Admin",
-    facebookPageAccess: "Admin",
-    instagramAccountAccess: "Admin",
+    facebookId: "test_id",
+    facebookPassword: "test_pass",
+    instagramUsername: "test_user",
+    instagramPassword: "test_pass",
     reportingFrequency: "Weekly",
     successMetrics: "Lead generation",
     additionalNotes: "None",
@@ -53,6 +52,10 @@ vi.mock("./db", () => ({
 
 vi.mock("./_core/notification", () => ({
   notifyOwner: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock("./_core/emailService", () => ({
+  sendEmail: vi.fn().mockResolvedValue(true),
 }));
 
 describe("form.submit", () => {
@@ -83,13 +86,11 @@ describe("form.submit", () => {
       campaignDuration: "30",
       startDate: "2026-05-01",
       targetLocation: "5 KM radius",
-      targetAgeGroup: "25-34",
       targetGender: "All",
       idealCustomer: "Young professionals",
       audienceInterests: "Tech enthusiasts",
       offering: "Online products",
       priceRange: "500-2000",
-      offersDiscounts: "10% discount",
       usp: "Best quality",
       leadDirection: "WhatsApp",
       contactNumber: "+91 9876543210",
@@ -98,18 +99,19 @@ describe("form.submit", () => {
       previousAds: "Yes",
       pastResults: "Good results",
       customerDatabase: "Yes",
+      customerDataFileUrl: "",
       facebookPage: "https://facebook.com/test",
       instagramPage: "https://instagram.com/test",
       website: "https://test.com",
       googleBusinessProfile: "https://google.com/test",
       availableCreatives: "Both",
-      needNewCreatives: "No",
       creativeMessage: "Great offer",
       adAccountType: "Business Owner Account",
       hasMetaBusinessManager: "Yes",
-      adAccountAccess: "Admin",
-      facebookPageAccess: "Admin",
-      instagramAccountAccess: "Admin",
+      facebookId: "test_id",
+      facebookPassword: "test_pass",
+      instagramUsername: "test_user",
+      instagramPassword: "test_pass",
       reportingFrequency: "Weekly",
       successMetrics: "Lead generation",
       additionalNotes: "None",
@@ -117,17 +119,36 @@ describe("form.submit", () => {
 
     const result = await caller.form.submit(formData);
 
-    expect(result).toEqual({
-      success: true,
-      submissionId: 1,
-    });
+    expect(result.success).toBe(true);
+    expect(result.submissionId).toBe(1);
   });
 
   it("fails validation when required fields are missing", async () => {
     const caller = appRouter.createCaller(ctx);
 
-    const incompleteFormData = {
+    const incompleteData = {
       businessName: "",
+      contactNumber: "",
+      facebookPage: "",
+      instagramPage: "",
+    };
+
+    try {
+      await caller.form.submit(incompleteData as any);
+      expect.fail("Should have thrown validation error");
+    } catch (error: any) {
+      expect(error.message).toContain("Business name is required");
+    }
+  });
+
+  it("accepts optional fields as empty strings", async () => {
+    const caller = appRouter.createCaller(ctx);
+
+    const minimalData = {
+      businessName: "Test Business",
+      contactNumber: "+91 9876543210",
+      facebookPage: "https://facebook.com/test",
+      instagramPage: "https://instagram.com/test",
       businessType: "",
       businessDuration: "",
       businessLocation: "",
@@ -137,93 +158,35 @@ describe("form.submit", () => {
       campaignDuration: "",
       startDate: "",
       targetLocation: "",
-      targetAgeGroup: "",
       targetGender: "",
       idealCustomer: "",
       audienceInterests: "",
       offering: "",
       priceRange: "",
-      offersDiscounts: "",
       usp: "",
       leadDirection: "",
-      contactNumber: "",
       leadManager: "",
       responseTime: "",
       previousAds: "",
       pastResults: "",
       customerDatabase: "",
-      facebookPage: "",
-      instagramPage: "",
+      customerDataFileUrl: "",
       website: "",
       googleBusinessProfile: "",
       availableCreatives: "",
-      needNewCreatives: "",
       creativeMessage: "",
       adAccountType: "",
       hasMetaBusinessManager: "",
-      adAccountAccess: "",
-      facebookPageAccess: "",
-      instagramAccountAccess: "",
+      facebookId: "",
+      facebookPassword: "",
+      instagramUsername: "",
+      instagramPassword: "",
       reportingFrequency: "",
       successMetrics: "",
       additionalNotes: "",
     };
 
-    try {
-      await caller.form.submit(incompleteFormData);
-      expect.fail("Should have thrown validation error");
-    } catch (error: any) {
-      expect(error.code).toBe("BAD_REQUEST");
-    }
-  });
-
-  it("accepts optional fields as empty strings", async () => {
-    const caller = appRouter.createCaller(ctx);
-
-    const formDataWithOptionals = {
-      businessName: "Test Business",
-      businessType: "E-commerce",
-      businessDuration: "2 years",
-      businessLocation: "Mumbai",
-      campaignGoal: "Leads",
-      desiredAction: "Contact us",
-      dailyBudget: "500",
-      campaignDuration: "30",
-      startDate: "2026-05-01",
-      targetLocation: "5 KM radius",
-      targetAgeGroup: "25-34",
-      targetGender: "All",
-      idealCustomer: "Young professionals",
-      audienceInterests: "Tech enthusiasts",
-      offering: "Online products",
-      priceRange: "500-2000",
-      offersDiscounts: "10% discount",
-      usp: "Best quality",
-      leadDirection: "WhatsApp",
-      contactNumber: "+91 9876543210",
-      leadManager: "John Doe",
-      responseTime: "Immediate",
-      previousAds: "Yes",
-      pastResults: "", // Optional
-      customerDatabase: "Yes",
-      facebookPage: "", // Optional
-      instagramPage: "", // Optional
-      website: "", // Optional
-      googleBusinessProfile: "", // Optional
-      availableCreatives: "Both",
-      needNewCreatives: "No",
-      creativeMessage: "Great offer",
-      adAccountType: "Business Owner Account",
-      hasMetaBusinessManager: "Yes",
-      adAccountAccess: "Admin",
-      facebookPageAccess: "Admin",
-      instagramAccountAccess: "Admin",
-      reportingFrequency: "Weekly",
-      successMetrics: "Lead generation",
-      additionalNotes: "", // Optional
-    };
-
-    const result = await caller.form.submit(formDataWithOptionals);
+    const result = await caller.form.submit(minimalData);
 
     expect(result.success).toBe(true);
     expect(result.submissionId).toBe(1);
@@ -234,51 +197,48 @@ describe("form.submit", () => {
 
     const formData = {
       businessName: "Test Business",
-      businessType: "E-commerce",
-      businessDuration: "2 years",
-      businessLocation: "Mumbai",
-      campaignGoal: "Leads",
-      desiredAction: "Contact us",
-      dailyBudget: "500",
-      campaignDuration: "30",
-      startDate: "2026-05-01",
-      targetLocation: "5 KM radius",
-      targetAgeGroup: "25-34",
-      targetGender: "All",
-      idealCustomer: "Young professionals",
-      audienceInterests: "Tech enthusiasts",
-      offering: "Online products",
-      priceRange: "500-2000",
-      offersDiscounts: "10% discount",
-      usp: "Best quality",
-      leadDirection: "WhatsApp",
       contactNumber: "+91 9876543210",
-      leadManager: "John Doe",
-      responseTime: "Immediate",
-      previousAds: "Yes",
-      pastResults: "Good results",
-      customerDatabase: "Yes",
       facebookPage: "https://facebook.com/test",
       instagramPage: "https://instagram.com/test",
-      website: "https://test.com",
-      googleBusinessProfile: "https://google.com/test",
-      availableCreatives: "Both",
-      needNewCreatives: "No",
-      creativeMessage: "Great offer",
-      adAccountType: "Business Owner Account",
-      hasMetaBusinessManager: "Yes",
-      adAccountAccess: "Admin",
-      facebookPageAccess: "Admin",
-      instagramAccountAccess: "Admin",
-      reportingFrequency: "Weekly",
-      successMetrics: "Lead generation",
-      additionalNotes: "None",
+      businessType: "",
+      businessDuration: "",
+      businessLocation: "",
+      campaignGoal: "",
+      desiredAction: "",
+      dailyBudget: "",
+      campaignDuration: "",
+      startDate: "",
+      targetLocation: "",
+      targetGender: "",
+      idealCustomer: "",
+      audienceInterests: "",
+      offering: "",
+      priceRange: "",
+      usp: "",
+      leadDirection: "",
+      leadManager: "",
+      responseTime: "",
+      previousAds: "",
+      pastResults: "",
+      customerDatabase: "",
+      customerDataFileUrl: "",
+      website: "",
+      googleBusinessProfile: "",
+      availableCreatives: "",
+      creativeMessage: "",
+      adAccountType: "",
+      hasMetaBusinessManager: "",
+      facebookId: "",
+      facebookPassword: "",
+      instagramUsername: "",
+      instagramPassword: "",
+      reportingFrequency: "",
+      successMetrics: "",
+      additionalNotes: "",
     };
 
     const result = await caller.form.submit(formData);
 
-    expect(result.submissionId).toBeDefined();
-    expect(typeof result.submissionId).toBe("number");
-    expect(result.submissionId).toBeGreaterThan(0);
+    expect(result.submissionId).toBe(1);
   });
 });
