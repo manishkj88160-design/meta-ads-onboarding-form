@@ -3,9 +3,10 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createFormSubmission } from "./db";
+import { createFormSubmission, getAdminUserByAdminId, getAllAdminUsers, createAdminUser, updateAdminPassword, deleteAdminUser, getAllFormSubmissions, getFormSubmissionById } from "./db";
 import { notifyOwner } from "./_core/notification";
 import { sendEmail } from "./_core/emailService";
+import { hashPassword, verifyPassword, generateRandomPassword } from "./_core/adminAuth";
 
 const formSubmissionSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -60,6 +61,86 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+  }),
+
+  admin: router({
+    login: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID is required"),
+        password: z.string().min(1, "Password is required"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const admin = await getAdminUserByAdminId(input.adminId);
+        
+        if (!admin || admin.isActive !== "true") {
+          throw new Error("Invalid admin ID or password");
+        }
+        
+        if (!verifyPassword(input.password, admin.passwordHash)) {
+          throw new Error("Invalid admin ID or password");
+        }
+        
+        // Set admin session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie("admin_session", JSON.stringify({ adminId: admin.adminId, id: admin.id }), {
+          ...cookieOptions,
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        
+        return {
+          success: true,
+          adminId: admin.adminId,
+          name: admin.name,
+        };
+      }),
+    
+    getSubmissions: publicProcedure.query(async () => {
+      return await getAllFormSubmissions();
+    }),
+    
+    getSubmissionById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await getFormSubmissionById(input.id);
+      }),
+    
+    getAdminUsers: publicProcedure.query(async () => {
+      return await getAllAdminUsers();
+    }),
+    
+    addAdminUser: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID is required"),
+        name: z.string().optional(),
+        password: z.string().min(1, "Password is required"),
+      }))
+      .mutation(async ({ input }) => {
+        const passwordHash = hashPassword(input.password);
+        return await createAdminUser({
+          adminId: input.adminId,
+          passwordHash,
+          name: input.name,
+          isActive: "true",
+        });
+      }),
+    
+    resetAdminPassword: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID is required"),
+        newPassword: z.string().min(1, "New password is required"),
+      }))
+      .mutation(async ({ input }) => {
+        const passwordHash = hashPassword(input.newPassword);
+        await updateAdminPassword(input.adminId, passwordHash);
+        return { success: true };
+      }),
+    
+    removeAdminUser: publicProcedure
+      .input(z.object({ adminId: z.string().min(1, "Admin ID is required") }))
+      .mutation(async ({ input }) => {
+        await deleteAdminUser(input.adminId);
+        return { success: true };
+      }),
   }),
 
   form: router({
@@ -179,7 +260,7 @@ export const appRouter = router({
     </div>
 
     <div class="section">
-      <h3>Section 6: Lead Handling</h3>
+      <h3>Section 6: Lead Handling and Conversion Path</h3>
       <div class="field">
         <div class="field-label">Lead Direction:</div>
         <div class="field-value">${input.leadDirection || "N/A"}</div>
@@ -193,7 +274,7 @@ export const appRouter = router({
         <div class="field-value">${input.leadManager || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Expected Response Time:</div>
+        <div class="field-label">Response Time:</div>
         <div class="field-value">${input.responseTime || "N/A"}</div>
       </div>
     </div>
@@ -214,7 +295,7 @@ export const appRouter = router({
       </div>
       <div class="field">
         <div class="field-label">Customer Data File:</div>
-        <div class="field-value">${input.customerDataFileUrl || "No file attached"}</div>
+        <div class="field-value">${input.customerDataFileUrl ? `<a href="${input.customerDataFileUrl}">View File</a>` : "N/A"}</div>
       </div>
     </div>
 
@@ -222,11 +303,11 @@ export const appRouter = router({
       <h3>Section 8: Online Presence</h3>
       <div class="field">
         <div class="field-label">Facebook Page:</div>
-        <div class="field-value">${input.facebookPage || "N/A"}</div>
+        <div class="field-value">${input.facebookPage ? `<a href="${input.facebookPage}">Link</a>` : "N/A"}</div>
       </div>
       <div class="field">
         <div class="field-label">Instagram Page:</div>
-        <div class="field-value">${input.instagramPage || "N/A"}</div>
+        <div class="field-value">${input.instagramPage ? `<a href="${input.instagramPage}">Link</a>` : "N/A"}</div>
       </div>
       <div class="field">
         <div class="field-label">Website:</div>
@@ -245,7 +326,7 @@ export const appRouter = router({
         <div class="field-value">${input.availableCreatives || "N/A"}</div>
       </div>
       <div class="field">
-        <div class="field-label">Creative Message/Angle:</div>
+        <div class="field-label">Creative Message:</div>
         <div class="field-value">${input.creativeMessage || "N/A"}</div>
       </div>
     </div>

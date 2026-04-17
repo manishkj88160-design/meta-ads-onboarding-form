@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, formSubmissions, FormSubmission, InsertFormSubmission } from "../drizzle/schema";
+import { InsertUser, users, formSubmissions, FormSubmission, InsertFormSubmission, adminUsers, AdminUser, InsertAdminUser } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -148,4 +148,108 @@ export async function getFormSubmissionById(id: number): Promise<FormSubmission 
     .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+
+/**
+ * Get admin user by ID
+ */
+export async function getAdminUserByAdminId(adminId: string): Promise<AdminUser | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get admin user: database not available");
+    return undefined;
+  }
+
+  const result = await db
+    .select()
+    .from(adminUsers)
+    .where(eq(adminUsers.adminId, adminId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Get all admin users
+ */
+export async function getAllAdminUsers(): Promise<AdminUser[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get admin users: database not available");
+    return [];
+  }
+
+  return await db.select().from(adminUsers);
+}
+
+/**
+ * Create a new admin user
+ */
+export async function createAdminUser(data: InsertAdminUser): Promise<AdminUser> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.insert(adminUsers).values(data);
+  const adminUserId = (result as any)[0]?.insertId;
+  
+  if (!adminUserId) {
+    throw new Error("Failed to get insertion ID");
+  }
+
+  const admin = await db
+    .select()
+    .from(adminUsers)
+    .where(eq(adminUsers.id, adminUserId))
+    .limit(1);
+
+  if (!admin.length) {
+    throw new Error("Failed to retrieve created admin user");
+  }
+
+  return admin[0];
+}
+
+/**
+ * Update admin user password
+ */
+export async function updateAdminPassword(adminId: string, newPasswordHash: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db
+    .update(adminUsers)
+    .set({ passwordHash: newPasswordHash, updatedAt: new Date() })
+    .where(eq(adminUsers.adminId, adminId));
+}
+
+/**
+ * Delete admin user
+ */
+export async function deleteAdminUser(adminId: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db.delete(adminUsers).where(eq(adminUsers.adminId, adminId));
+}
+
+/**
+ * Deactivate admin user
+ */
+export async function deactivateAdminUser(adminId: string): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db
+    .update(adminUsers)
+    .set({ isActive: "false", updatedAt: new Date() })
+    .where(eq(adminUsers.adminId, adminId));
 }
