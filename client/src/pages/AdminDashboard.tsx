@@ -2,89 +2,178 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, LogOut, Plus, Trash2, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronUp, LogOut } from "lucide-react";
 
 type SubmissionDetailsType = {
   [key: number]: boolean;
 };
 
+interface FormSubmission {
+  id: number;
+  businessName?: string | null;
+  businessType?: string | null;
+  businessDuration?: string | null;
+  businessLocation?: string | null;
+  campaignGoal?: string | null;
+  desiredAction?: string | null;
+  dailyBudget?: string | null;
+  campaignDuration?: string | null;
+  startDate?: string | null;
+  targetLocation?: string | null;
+  targetGender?: string | null;
+  idealCustomer?: string | null;
+  audienceInterests?: string | null;
+  offering?: string | null;
+  priceRange?: string | null;
+  usp?: string | null;
+  leadDirection?: string | null;
+  contactNumber?: string | null;
+  leadManager?: string | null;
+  responseTime?: string | null;
+  previousAds?: string | null;
+  pastResults?: string | null;
+  customerDatabase?: string | null;
+  customerDataFileUrl?: string | null;
+  facebookPage?: string | null;
+  instagramPage?: string | null;
+  website?: string | null;
+  googleBusinessProfile?: string | null;
+  availableCreatives?: string | null;
+  creativeMessage?: string | null;
+  adAccountType?: string | null;
+  hasMetaBusinessManager?: string | null;
+  facebookId?: string | null;
+  facebookPassword?: string | null;
+  instagramUsername?: string | null;
+  instagramPassword?: string | null;
+  reportingFrequency?: string | null;
+  successMetrics?: string | null;
+  additionalNotes?: string | null;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+const formSections = [
+  {
+    title: "1. Business Information",
+    fields: [
+      { key: "businessName", label: "Business Name" },
+      { key: "businessType", label: "Business Type (Product/Service)" },
+      { key: "businessDuration", label: "How long have you been in the market?" },
+      { key: "businessLocation", label: "Business Location (City and Area)" },
+    ],
+  },
+  {
+    title: "2. Campaign Objective",
+    fields: [
+      { key: "campaignGoal", label: "What is your primary goal from this ad campaign?" },
+      { key: "desiredAction", label: "What action do you want users to take after seeing the ad?" },
+    ],
+  },
+  {
+    title: "3. Budget and Duration",
+    fields: [
+      { key: "dailyBudget", label: "Daily Ad Budget (INR)" },
+      { key: "campaignDuration", label: "Total number of days ad is going to run" },
+      { key: "startDate", label: "Expected Ad Start Dates" },
+    ],
+  },
+  {
+    title: "4. Target Audience",
+    fields: [
+      { key: "targetLocation", label: "Target Location (specific area or radius in KM)" },
+      { key: "targetGender", label: "Target Gender" },
+      { key: "idealCustomer", label: "Describe your ideal customer" },
+      { key: "audienceInterests", label: "Any specific interests, behaviors, or audience targeting preferences" },
+    ],
+  },
+  {
+    title: "5. Product or Service Details",
+    fields: [
+      { key: "offering", label: "What is the goal from this ad" },
+      { key: "priceRange", label: "Product/Services Price Range" },
+      { key: "usp", label: "What makes your business unique (USP)?" },
+    ],
+  },
+  {
+    title: "6. Lead Handling and Conversion Path",
+    fields: [
+      { key: "leadDirection", label: "Where should leads or messages be directed?" },
+      { key: "contactNumber", label: "Contact Number or WhatsApp Number" },
+      { key: "leadManager", label: "Who will manage incoming leads or messages?" },
+      { key: "responseTime", label: "Expected response time" },
+    ],
+  },
+  {
+    title: "7. Previous Advertising Data",
+    fields: [
+      { key: "previousAds", label: "Have you run ads before?" },
+      { key: "pastResults", label: "If yes, share past results (leads, sales, cost per lead, etc.)" },
+      { key: "customerDatabase", label: "Do you have any customer database (phone numbers, email list)?" },
+      { key: "customerDataFileUrl", label: "Attach File of Customer Data or previous ad report" },
+    ],
+  },
+  {
+    title: "8. Online Presence",
+    fields: [
+      { key: "facebookPage", label: "Facebook Page Link" },
+      { key: "instagramPage", label: "Instagram Page Link" },
+      { key: "website", label: "Website Link (if available)" },
+      { key: "googleBusinessProfile", label: "Google Business Profile Link (if available)" },
+    ],
+  },
+  {
+    title: "9. Creatives",
+    fields: [
+      { key: "availableCreatives", label: "Available creatives (Video / Images / Both)" },
+      { key: "creativeMessage", label: "Any specific message, offer, or angle you want to highlight" },
+    ],
+  },
+  {
+    title: "10. Access and Permissions",
+    fields: [
+      { key: "adAccountType", label: "Ad Account to be used (Team Account / Business Owner Account)" },
+      { key: "hasMetaBusinessManager", label: "Do you have Meta Business Manager?" },
+      { key: "facebookId", label: "Facebook ID" },
+      { key: "facebookPassword", label: "Facebook Password" },
+      { key: "instagramUsername", label: "Instagram Username" },
+      { key: "instagramPassword", label: "Instagram Password" },
+    ],
+  },
+  {
+    title: "11. Reporting and Expectations",
+    fields: [
+      { key: "reportingFrequency", label: "Preferred reporting frequency" },
+      { key: "successMetrics", label: "What defines success for you?" },
+    ],
+  },
+  {
+    title: "12. Additional Notes",
+    fields: [
+      { key: "additionalNotes", label: "Any additional instructions, expectations, or important details" },
+    ],
+  },
+];
+
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [expandedSubmissions, setExpandedSubmissions] = useState<SubmissionDetailsType>({});
-  const [showAddAdmin, setShowAddAdmin] = useState(false);
-  const [showManageAdmins, setShowManageAdmins] = useState(false);
-  const [newAdminId, setNewAdminId] = useState("");
-  const [newAdminName, setNewAdminName] = useState("");
-  const [newAdminPassword, setNewAdminPassword] = useState("");
-  const [resetAdminId, setResetAdminId] = useState("");
-  const [newPassword, setNewPassword] = useState("");
 
   const { data: submissions, isLoading: submissionsLoading } = trpc.admin.getSubmissions.useQuery();
-  const { data: adminUsers } = trpc.admin.getAdminUsers.useQuery();
-  
-  const addAdminMutation = trpc.admin.addAdminUser.useMutation({
+
+  const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
-      toast.success("Admin user added successfully!");
-      setNewAdminId("");
-      setNewAdminName("");
-      setNewAdminPassword("");
-      setShowAddAdmin(false);
+      setLocation("/admin/login");
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to add admin user");
+    onError: () => {
+      toast.error("Logout failed");
     },
   });
 
-  const resetPasswordMutation = trpc.admin.resetAdminPassword.useMutation({
-    onSuccess: () => {
-      toast.success("Password reset successfully!");
-      setResetAdminId("");
-      setNewPassword("");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to reset password");
-    },
-  });
-
-  const removeAdminMutation = trpc.admin.removeAdminUser.useMutation({
-    onSuccess: () => {
-      toast.success("Admin user removed successfully!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to remove admin user");
-    },
-  });
-
-  const handleAddAdmin = async () => {
-    if (!newAdminId.trim() || !newAdminPassword.trim()) {
-      toast.error("Admin ID and password are required");
-      return;
-    }
-    await addAdminMutation.mutateAsync({
-      adminId: newAdminId,
-      name: newAdminName || undefined,
-      password: newAdminPassword,
-    });
-  };
-
-  const handleResetPassword = async () => {
-    if (!resetAdminId.trim() || !newPassword.trim()) {
-      toast.error("Admin ID and new password are required");
-      return;
-    }
-    await resetPasswordMutation.mutateAsync({
-      adminId: resetAdminId,
-      newPassword: newPassword,
-    });
-  };
-
-  const handleRemoveAdmin = async (adminId: string) => {
-    if (confirm(`Are you sure you want to remove admin user "${adminId}"?`)) {
-      await removeAdminMutation.mutateAsync({ adminId });
-    }
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   const toggleSubmissionDetails = (id: number) => {
@@ -94,250 +183,134 @@ export default function AdminDashboard() {
     }));
   };
 
-  const handleLogout = () => {
-    document.cookie = "admin_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    setLocation("/admin/login");
+  const formatFieldValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === "") {
+      return "Not provided";
+    }
+    if (typeof value === "boolean") {
+      return value ? "Yes" : "No";
+    }
+    if (value instanceof Date) {
+      return value.toLocaleDateString();
+    }
+    return String(value);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-2">Form Submissions Management</p>
+          </div>
           <Button
             onClick={handleLogout}
-            variant="outline"
-            className="flex items-center gap-2"
+            disabled={logoutMutation.isPending}
+            variant="destructive"
+            className="gap-2"
           >
             <LogOut size={18} />
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8">
-          <Button
-            onClick={() => {
-              setShowManageAdmins(false);
-              setShowAddAdmin(false);
-            }}
-            variant={!showManageAdmins && !showAddAdmin ? "default" : "outline"}
-          >
-            Form Submissions
-          </Button>
-          <Button
-            onClick={() => setShowManageAdmins(!showManageAdmins)}
-            variant={showManageAdmins ? "default" : "outline"}
-          >
-            Manage Admins
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
           </Button>
         </div>
 
-        {/* Form Submissions Section */}
-        {!showManageAdmins && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Form Submissions ({submissions?.length || 0})
-            </h2>
-            
-            {submissionsLoading ? (
-              <Card className="p-8 text-center">
-                <p className="text-gray-600">Loading submissions...</p>
-              </Card>
-            ) : submissions && submissions.length > 0 ? (
-              <div className="space-y-4">
-                {submissions.map((submission) => (
-                  <Card key={submission.id} className="p-6">
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleSubmissionDetails(submission.id)}
-                    >
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {submission.businessName}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          ID: #{submission.id} | Contact: {submission.contactNumber}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Submitted: {new Date(submission.createdAt).toLocaleString()}
-                        </p>
-                      </div>
+        {/* Submissions List */}
+        <div className="space-y-4">
+          {submissionsLoading ? (
+            <Card className="p-8 text-center">
+              <p className="text-gray-600">Loading submissions...</p>
+            </Card>
+          ) : submissions && submissions.length > 0 ? (
+            <>
+              <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-blue-800 font-semibold">
+                  Total Submissions: {submissions.length}
+                </p>
+              </div>
+              {(submissions as FormSubmission[]).map((submission) => (
+                <Card key={submission.id} className="overflow-hidden">
+                  <div
+                    onClick={() => toggleSubmissionDetails(submission.id)}
+                    className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition-colors flex justify-between items-center"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {submission.businessName || "Unnamed Submission"}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        ID: #{submission.id}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Submitted: {new Date(submission.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="ml-4">
                       {expandedSubmissions[submission.id] ? (
-                        <ChevronUp size={24} className="text-gray-400" />
+                        <ChevronUp size={24} className="text-indigo-600" />
                       ) : (
-                        <ChevronDown size={24} className="text-gray-400" />
+                        <ChevronDown size={24} className="text-indigo-600" />
                       )}
                     </div>
+                  </div>
 
-                    {expandedSubmissions[submission.id] && (
-                      <div className="mt-6 pt-6 border-t border-gray-200 space-y-4">
+                  {/* Expanded Details */}
+                  {expandedSubmissions[submission.id] && (
+                    <div className="p-6 bg-white border-t border-gray-200 space-y-8">
+                      {formSections.map((section) => (
+                        <div key={section.title}>
+                          <h4 className="text-lg font-bold text-indigo-700 mb-4 pb-2 border-b-2 border-indigo-200">
+                            {section.title}
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {section.fields.map((field) => {
+                              const value = submission[field.key as keyof FormSubmission];
+                              return (
+                                <div key={field.key} className="border-b pb-4">
+                                  <p className="text-sm font-semibold text-gray-700 mb-1">
+                                    {field.label}
+                                  </p>
+                                  <p className="text-gray-600 text-sm break-words">
+                                    {formatFieldValue(value)}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Submission Metadata */}
+                      <div className="pt-6 border-t border-gray-200">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm font-semibold text-gray-700">Business Type</p>
-                            <p className="text-gray-600">{submission.businessType || "N/A"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">Location</p>
-                            <p className="text-gray-600">{submission.businessLocation || "N/A"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">Campaign Goal</p>
-                            <p className="text-gray-600">{submission.campaignGoal || "N/A"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">Daily Budget</p>
-                            <p className="text-gray-600">₹{submission.dailyBudget || "N/A"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">Facebook Page</p>
-                            <p className="text-gray-600 truncate">
-                              <a href={submission.facebookPage} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                View
-                              </a>
+                            <p className="text-xs font-semibold text-gray-500 uppercase">
+                              Submission ID
                             </p>
+                            <p className="text-gray-800 font-mono">#{submission.id}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-700">Instagram Page</p>
-                            <p className="text-gray-600 truncate">
-                              <a href={submission.instagramPage} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                View
-                              </a>
+                            <p className="text-xs font-semibold text-gray-500 uppercase">
+                              Submitted At
+                            </p>
+                            <p className="text-gray-800">
+                              {new Date(submission.createdAt).toLocaleString()}
                             </p>
                           </div>
                         </div>
-
-                        {submission.additionalNotes && (
-                          <div>
-                            <p className="text-sm font-semibold text-gray-700">Additional Notes</p>
-                            <p className="text-gray-600">{submission.additionalNotes}</p>
-                          </div>
-                        )}
                       </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-8 text-center">
-                <p className="text-gray-600">No form submissions yet</p>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* Manage Admins Section */}
-        {showManageAdmins && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Manage Admin Users</h2>
-
-            {/* Add Admin Form */}
-            <Card className="p-6 bg-blue-50 border-blue-200">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">Add New Admin User</h3>
-                <Button
-                  onClick={() => setShowAddAdmin(!showAddAdmin)}
-                  variant="outline"
-                  size="sm"
-                >
-                  {showAddAdmin ? "Cancel" : <Plus size={18} />}
-                </Button>
-              </div>
-
-              {showAddAdmin && (
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Admin ID"
-                    value={newAdminId}
-                    onChange={(e) => setNewAdminId(e.target.value)}
-                  />
-                  <Input
-                    placeholder="Name (optional)"
-                    value={newAdminName}
-                    onChange={(e) => setNewAdminName(e.target.value)}
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={newAdminPassword}
-                    onChange={(e) => setNewAdminPassword(e.target.value)}
-                  />
-                  <Button
-                    onClick={handleAddAdmin}
-                    disabled={addAdminMutation.isPending}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    {addAdminMutation.isPending ? "Adding..." : "Add Admin User"}
-                  </Button>
-                </div>
-              )}
-            </Card>
-
-            {/* Reset Password Form */}
-            <Card className="p-6 bg-amber-50 border-amber-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Reset Admin Password</h3>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Admin ID"
-                  value={resetAdminId}
-                  onChange={(e) => setResetAdminId(e.target.value)}
-                />
-                <Input
-                  type="password"
-                  placeholder="New Password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <Button
-                  onClick={handleResetPassword}
-                  disabled={resetPasswordMutation.isPending}
-                  className="w-full bg-amber-600 hover:bg-amber-700"
-                >
-                  <RotateCcw size={18} className="mr-2" />
-                  {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
-                </Button>
-              </div>
-            </Card>
-
-            {/* Admin Users List */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Admin Users ({adminUsers?.length || 0})
-              </h3>
-              {adminUsers && adminUsers.length > 0 ? (
-                <div className="space-y-3">
-                  {adminUsers.map((admin) => (
-                    <div key={admin.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-gray-800">{admin.name || admin.adminId}</p>
-                        <p className="text-sm text-gray-600">ID: {admin.adminId}</p>
-                        <p className="text-xs text-gray-500">
-                          Created: {new Date(admin.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className={`text-xs font-semibold mt-2 ${admin.isActive === "true" ? "text-green-600" : "text-red-600"}`}>
-                          Status: {admin.isActive === "true" ? "Active" : "Inactive"}
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => handleRemoveAdmin(admin.adminId)}
-                        disabled={removeAdminMutation.isPending}
-                        variant="destructive"
-                        size="sm"
-                      >
-                        <Trash2 size={18} />
-                      </Button>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-600">No admin users found</p>
-              )}
+                  )}
+                </Card>
+              ))}
+            </>
+          ) : (
+            <Card className="p-8 text-center">
+              <p className="text-gray-600">No form submissions yet</p>
             </Card>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
