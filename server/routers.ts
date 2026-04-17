@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createFormSubmission, getAdminUserByAdminId, getAllAdminUsers, createAdminUser, updateAdminPassword, deleteAdminUser, getAllFormSubmissions, getFormSubmissionById } from "./db";
+import { createFormSubmission, getAdminUserByAdminId, getAllAdminUsers, createAdminUser, updateAdminPassword, deleteAdminUser, getAllFormSubmissions, getFormSubmissionById, getMasterAdminByMasterId, updateAdminUserDetails } from "./db";
 import { notifyOwner } from "./_core/notification";
 import { sendEmail } from "./_core/emailService";
 import { hashPassword, verifyPassword, generateRandomPassword } from "./_core/adminAuth";
@@ -103,41 +103,119 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await getFormSubmissionById(input.id);
       }),
+  }),
+
+  masterAdmin: router({
+    login: publicProcedure
+      .input(z.object({
+        masterId: z.string().min(1, "Master ID is required"),
+        password: z.string().min(1, "Password is required"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const master = await getMasterAdminByMasterId(input.masterId);
+        
+        if (!master) {
+          throw new Error("Invalid master ID or password");
+        }
+        
+        if (!verifyPassword(input.password, master.passwordHash)) {
+          throw new Error("Invalid master ID or password");
+        }
+        
+        // Set master admin session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie("master_admin_session", JSON.stringify({ masterId: master.masterId, id: master.id }), {
+          ...cookieOptions,
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        
+        return {
+          success: true,
+          masterId: master.masterId,
+          name: master.name,
+        };
+      }),
     
-    getAdminUsers: publicProcedure.query(async () => {
+    getAllAdmins: publicProcedure.query(async () => {
       return await getAllAdminUsers();
     }),
     
-    addAdminUser: publicProcedure
+    addAdmin: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID (email/mobile) is required"),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Validate email or mobile format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const mobileRegex = /^(\+91)?[6-9]\d{9}$/;
+        
+        if (!emailRegex.test(input.adminId) && !mobileRegex.test(input.adminId)) {
+          throw new Error("Admin ID must be a valid email or 10-digit mobile number");
+        }
+        
+        // Generate random password
+        const password = generateRandomPassword();
+        const passwordHash = hashPassword(password);
+        
+        const admin = await createAdminUser({
+          adminId: input.adminId,
+          passwordHash,
+          name: input.name || input.adminId,
+          isActive: "true",
+        });
+        
+        return {
+          success: true,
+          adminId: admin.adminId,
+          password: password, // Return password only on creation
+          name: admin.name,
+        };
+      }),
+    
+    editAdmin: publicProcedure
       .input(z.object({
         adminId: z.string().min(1, "Admin ID is required"),
         name: z.string().optional(),
-        password: z.string().min(1, "Password is required"),
+        isActive: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        const passwordHash = hashPassword(input.password);
-        return await createAdminUser({
-          adminId: input.adminId,
-          passwordHash,
+        await updateAdminUserDetails(input.adminId, {
           name: input.name,
-          isActive: "true",
+          isActive: input.isActive,
         });
-      }),
-    
-    resetAdminPassword: publicProcedure
-      .input(z.object({
-        adminId: z.string().min(1, "Admin ID is required"),
-        newPassword: z.string().min(1, "New password is required"),
-      }))
-      .mutation(async ({ input }) => {
-        const passwordHash = hashPassword(input.newPassword);
-        await updateAdminPassword(input.adminId, passwordHash);
+        
         return { success: true };
       }),
     
-    removeAdminUser: publicProcedure
-      .input(z.object({ adminId: z.string().min(1, "Admin ID is required") }))
+    resetPassword: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID is required"),
+      }))
       .mutation(async ({ input }) => {
+        // Generate new random password
+        const newPassword = generateRandomPassword();
+        const passwordHash = hashPassword(newPassword);
+        
+        await updateAdminPassword(input.adminId, passwordHash);
+        
+        return {
+          success: true,
+          newPassword: newPassword,
+        };
+      }),
+    
+    deleteAdmin: publicProcedure
+      .input(z.object({
+        adminId: z.string().min(1, "Admin ID is required"),
+      }))
+      .mutation(async ({ input }) => {
+        // Check if trying to delete master admin
+        const admin = await getAdminUserByAdminId(input.adminId);
+        if (admin?.isMasterAdmin === "true") {
+          throw new Error("Cannot delete master admin account");
+        }
+        
         await deleteAdminUser(input.adminId);
         return { success: true };
       }),

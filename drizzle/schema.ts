@@ -110,9 +110,25 @@ export const adminUsers = mysqlTable("admin_users", {
   passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }),
   isActive: varchar("isActive", { length: 10 }).default("true").notNull(),
+  isMasterAdmin: varchar("isMasterAdmin", { length: 10 }).default("false").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type InsertAdminUser = typeof adminUsers.$inferInsert;
+
+/**
+ * Master admin table for super admin access control
+ */
+export const masterAdmins = mysqlTable("master_admins", {
+  id: int("id").autoincrement().primaryKey(),
+  masterId: varchar("masterId", { length: 255 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MasterAdmin = typeof masterAdmins.$inferSelect;
+export type InsertMasterAdmin = typeof masterAdmins.$inferInsert;

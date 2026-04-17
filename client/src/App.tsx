@@ -7,6 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import MasterAdminLogin from "./pages/MasterAdminLogin";
+import MasterAdminDashboard from "./pages/MasterAdminDashboard";
 import OnboardingForm from "./pages/OnboardingForm";
 
 function Router() {
@@ -16,6 +18,8 @@ function Router() {
       <Route path="/" component={OnboardingForm} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/master-admin/login" component={MasterAdminLogin} />
+      <Route path="/master-admin/dashboard" component={MasterAdminDashboard} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

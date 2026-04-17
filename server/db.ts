@@ -253,3 +253,45 @@ export async function deactivateAdminUser(adminId: string): Promise<void> {
     .set({ isActive: "false", updatedAt: new Date() })
     .where(eq(adminUsers.adminId, adminId));
 }
+
+/**
+ * Get master admin by ID
+ */
+export async function getMasterAdminByMasterId(masterId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get master admin: database not available");
+    return undefined;
+  }
+
+  const { eq } = await import("drizzle-orm");
+  const { masterAdmins } = await import("../drizzle/schema");
+  
+  const result = await db
+    .select()
+    .from(masterAdmins)
+    .where(eq(masterAdmins.masterId, masterId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Update admin user details
+ */
+export async function updateAdminUserDetails(adminId: string, updates: { name?: string; isActive?: string }): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const { eq } = await import("drizzle-orm");
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+  if (updates.name !== undefined) updateData.name = updates.name;
+  if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+
+  await db
+    .update(adminUsers)
+    .set(updateData)
+    .where(eq(adminUsers.adminId, adminId));
+}
