@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createFormSubmission, getAdminUserByAdminId, getAllAdminUsers, createAdminUser, updateAdminPassword, deleteAdminUser, getAllFormSubmissions, getFormSubmissionById, getMasterAdminByMasterId, updateAdminUserDetails } from "./db";
+import { createFormSubmission, getAdminUserByAdminId, getAllAdminUsers, createAdminUser, updateAdminPassword, deleteAdminUser, getAllFormSubmissions, getFormSubmissionById, getMasterAdminByMasterId, updateAdminUserDetails, deleteFormSubmission } from "./db";
 import { notifyOwner } from "./_core/notification";
 import { sendEmail } from "./_core/emailService";
 import { hashPassword, verifyPassword, generateRandomPassword } from "./_core/adminAuth";
@@ -102,6 +102,15 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         return await getFormSubmissionById(input.id);
+      }),
+    
+    deleteSubmission: publicProcedure
+      .input(z.object({
+        submissionId: z.number().min(1, "Submission ID is required"),
+      }))
+      .mutation(async ({ input }) => {
+        await deleteFormSubmission(input.submissionId);
+        return { success: true };
       }),
   }),
 

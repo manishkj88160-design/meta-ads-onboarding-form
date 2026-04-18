@@ -295,3 +295,19 @@ export async function updateAdminUserDetails(adminId: string, updates: { name?: 
     .set(updateData)
     .where(eq(adminUsers.adminId, adminId));
 }
+
+
+/**
+ * Delete form submission by ID
+ */
+export async function deleteFormSubmission(submissionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const { eq } = await import("drizzle-orm");
+  await db
+    .delete(formSubmissions)
+    .where(eq(formSubmissions.id, submissionId));
+}
